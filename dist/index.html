@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10253f">
+  <meta name="description" content="A simple pretend investment account for learning how markets move.">
+  <title>My Investment Account</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2310253f'/%3E%3Cpath d='M14 43l11-12 9 7 16-20' fill='none' stroke='%23f7c84b' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="firebase.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div><p class="eyebrow">LEARNING PORTFOLIO</p><h1>My Investment Account</h1></div>
+      <div class="top-actions"><span class="sync-pill" id="syncStatus">Connecting…</span><button class="icon-button" id="parentButton" aria-label="Open parent mode" title="Parent mode">🔒</button></div>
+    </header>
+
+    <main>
+      <section class="hero-card" aria-labelledby="balanceLabel">
+        <div>
+          <p id="balanceLabel">My portfolio is worth</p>
+          <p class="balance" id="totalValue">RM0.00</p>
+          <p class="gain neutral" id="gainLine">Start with your first RM20</p>
+        </div>
+        <div class="hero-stats">
+          <div><span>Put in</span><strong id="contributed">RM0.00</strong></div>
+          <div><span>Investment change</span><strong id="gainAmount">RM0.00</strong></div>
+        </div>
+      </section>
+
+      <section id="choicePanel" class="choice-panel hidden" aria-labelledby="choiceTitle">
+        <div class="choice-heading"><div><p class="eyebrow dark">READY TO INVEST</p><h2 id="choiceTitle">Choose where the money goes</h2></div><span class="ready-pill" id="readyAmount">Money ready</span></div>
+        <div class="asset-grid" id="choiceGrid"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading"><div><p class="eyebrow dark">YOUR INVESTMENTS</p><h2>What I own</h2></div><button class="text-button" id="refreshButton">Refresh prices</button></div>
+        <div class="holdings-grid" id="holdingsGrid"></div>
+        <p class="price-note" id="priceNote">Loading latest prices…</p>
+      </section>
+
+      <section class="section chart-section">
+        <div class="section-heading"><div><p class="eyebrow dark">OVER TIME</p><h2>My money journey</h2></div></div>
+        <div class="chart-wrap"><canvas id="journeyChart" aria-label="Chart showing contributions and portfolio value over time"></canvas><div id="chartEmpty" class="chart-empty">Your chart will appear after your first investment.</div></div>
+        <div class="legend"><span><i class="legend-line value"></i>Portfolio value</span><span><i class="legend-line deposits"></i>Money put in</span></div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading"><div><p class="eyebrow dark">DECISIONS</p><h2>My investment diary</h2></div></div>
+        <div id="history" class="history"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="authDialog" class="modal" data-lock-close="true"><form id="authForm">
+    <div class="modal-icon">☁️</div><p class="eyebrow dark">CLOUD ACCOUNT</p><h2>Sign in</h2>
+    <p class="modal-copy">Sign in once using the account email. The portfolio will then stay synchronised across this iPad and any future device.</p>
+    <label>Email<input id="authEmail" type="email" autocomplete="username" required placeholder="Account email"></label>
+    <label>Password<input id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="Firebase password"></label>
+    <p class="form-error" id="authError"></p><button class="primary-button" id="signInButton" type="submit">Sign in securely</button>
+    <p class="small-copy auth-help">The account is created securely in Firebase Console. There is no public registration in this app.</p>
+  </form></dialog>
+
+  <dialog id="setupDialog" class="modal" data-lock-close="true"><form method="dialog" id="setupForm">
+    <div class="modal-icon">🌱</div><p class="eyebrow dark">WELCOME</p><h2>Set up the account</h2>
+    <p class="modal-copy">A parent chooses a PIN. The first RM20 will then be ready to invest.</p>
+    <label>Parent PIN<input id="setupPin" type="password" inputmode="numeric" autocomplete="one-time-code" name="setup-access-code" data-lpignore="true" data-1p-ignore minlength="4" maxlength="8" pattern="[0-9]{4,8}" required placeholder="4–8 numbers"></label>
+    <label>Confirm PIN<input id="setupPinConfirm" type="password" inputmode="numeric" autocomplete="one-time-code" name="confirm-setup-access-code" data-lpignore="true" data-1p-ignore minlength="4" maxlength="8" pattern="[0-9]{4,8}" required placeholder="Repeat PIN"></label>
+    <p class="form-error" id="setupError"></p><button class="primary-button" value="default">Create account</button>
+  </form></dialog>
+
+  <dialog id="parentDialog" class="modal"><form method="dialog" id="parentForm">
+    <button class="close-button" value="cancel" aria-label="Close">×</button><p class="eyebrow dark">PARENT MODE</p><h2 id="parentTitle">Enter your PIN</h2>
+    <div id="pinStep"><label>Parent PIN<input id="parentPin" type="password" inputmode="numeric" autocomplete="one-time-code" name="parent-access-code" data-lpignore="true" data-1p-ignore maxlength="8" placeholder="••••"></label><p class="form-error" id="pinError"></p><button class="primary-button" id="unlockButton" value="default">Unlock</button></div>
+    <div id="parentControls" class="hidden">
+      <div class="parent-balance"><span>Next weekly deposit</span><strong id="depositStatus">Ready now</strong></div>
+      <button type="button" class="primary-button" id="depositButton">Add weekly RM20</button>
+      <p class="small-copy">Only one deposit can be added every 6 days. It stays ready until an investment is chosen.</p>
+      <section class="parent-tool">
+        <h3>Add a different amount</h3>
+        <div class="inline-control"><label class="grow">Amount (RM)<input id="customAmount" type="number" inputmode="decimal" min="1" max="10000" step="0.01" placeholder="50.00"></label><button type="button" class="secondary-button" id="customDepositButton">Add</button></div>
+        <p class="small-copy">The complete available amount will be invested in the asset she chooses.</p>
+      </section>
+      <section class="parent-tool">
+        <h3>Change parent PIN</h3>
+        <div class="pin-grid"><input id="newPin" type="password" inputmode="numeric" autocomplete="one-time-code" name="new-parent-access-code" data-lpignore="true" data-1p-ignore maxlength="8" placeholder="New PIN"><input id="confirmNewPin" type="password" inputmode="numeric" autocomplete="one-time-code" name="confirm-new-parent-access-code" data-lpignore="true" data-1p-ignore maxlength="8" placeholder="Repeat PIN"></div>
+        <button type="button" class="secondary-button" id="changePinButton">Change PIN</button>
+      </section>
+      <section class="parent-tool danger-zone">
+        <h3>Corrections</h3>
+        <button type="button" class="secondary-button" id="undoButton">Undo latest investment</button>
+        <button type="button" class="text-danger" id="openResetButton">Reset the complete account</button>
+      </section>
+      <div class="utility-row"><button type="button" class="secondary-button" id="exportButton">Export backup</button><label class="secondary-button file-label">Import backup<input type="file" id="importInput" accept="application/json"></label></div>
+      <button type="button" class="text-danger" id="signOutButton">Sign out of this device</button>
+    </div>
+  </form></dialog>
+
+  <dialog id="confirmDialog" class="modal"><form method="dialog">
+    <div class="modal-icon" id="confirmIcon">🥇</div><p class="eyebrow dark">YOUR CHOICE</p><h2 id="confirmTitle">Invest in Gold?</h2><p class="modal-copy" id="confirmCopy"></p>
+    <div class="dialog-actions"><button class="secondary-button" value="cancel">Go back</button><button class="primary-button" id="confirmInvest" value="default">Invest RM20</button></div>
+  </form></dialog>
+
+  <dialog id="resetDialog" class="modal"><form method="dialog" id="resetForm">
+    <button class="close-button" value="cancel" aria-label="Close">×</button><div class="modal-icon">⚠️</div><p class="eyebrow dark">PARENT CONTROL</p><h2>Reset the account?</h2>
+    <p class="modal-copy">This permanently removes all deposits, investments and history. The parent PIN and login remain unchanged.</p>
+    <label>Type RESET to confirm<input id="resetConfirmation" autocomplete="off" required placeholder="RESET"></label>
+    <p class="form-error" id="resetError"></p><button class="danger-button" id="confirmResetButton" value="default">Reset everything</button>
+  </form></dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="app.js?v=7"></script>
+</body>
+</html>

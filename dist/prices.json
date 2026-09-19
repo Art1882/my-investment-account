@@ -1,0 +1,25 @@
+{
+  "asOf": "2026-09-17T10:58:59.655595+00:00",
+  "fxUsdMyr": 4.0960001945495605,
+  "assets": {
+    "gold": {
+      "symbol": "GLDM",
+      "name": "Gold",
+      "usd": 84.52999877929688,
+      "previousUsd": 85.0
+    },
+    "usa": {
+      "symbol": "SPY",
+      "name": "US Shares",
+      "usd": 754.0499877929688,
+      "previousUsd": 757.3900146484375
+    },
+    "asia": {
+      "symbol": "AIA",
+      "name": "Asia Shares",
+      "usd": 137.17999267578125,
+      "previousUsd": 137.11000061035156
+    }
+  },
+  "source": "Delayed Yahoo Finance market data"
+}

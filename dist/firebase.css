@@ -1,0 +1,56 @@
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sync-pill {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #e7edf4;
+  color: #557086;
+  font-size: .76rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.sync-pill.online {
+  background: #dff7ee;
+  color: #08724f;
+}
+
+.sync-pill.offline {
+  background: #fff1c9;
+  color: #8a5b00;
+}
+
+.auth-help {
+  margin: 14px 6px 0;
+  text-align: center;
+}
+
+.parent-tool { margin-top: 18px; padding-top: 16px; border-top: 1px solid #e3e8ef; }
+.parent-tool h3 { margin: 0 0 10px; font-size: 15px; }
+.inline-control { display: flex; gap: 10px; align-items: end; }
+.inline-control .grow { flex: 1; margin: 0; }
+.inline-control .secondary-button { min-height: 46px; }
+.pin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.danger-zone { display: grid; gap: 10px; }
+.danger-button { width: 100%; border: 0; border-radius: 12px; padding: 13px 16px; background: #b42318; color: white; font-weight: 800; cursor: pointer; }
+#parentDialog { max-height: calc(100vh - 32px); overflow-y: auto; }
+
+.text-danger {
+  display: block;
+  margin: 18px auto 0;
+  border: 0;
+  background: transparent;
+  color: #d14d5b;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@media (max-width: 520px) {
+  .sync-pill { max-width: 105px; overflow: hidden; text-overflow: ellipsis; }
+  .pin-grid { grid-template-columns: 1fr; }
+}
