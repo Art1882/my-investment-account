@@ -1,23 +1,23 @@
 {
-  "asOf": "2026-09-21T14:11:10.094653+00:00",
+  "asOf": "2026-09-21T22:35:25.840584+00:00",
   "fxUsdMyr": 4.074999809265137,
   "assets": {
     "gold": {
       "symbol": "GLDM",
       "name": "Gold",
-      "usd": 85.76499938964844,
+      "usd": 85.95999908447266,
       "previousUsd": 86.58999633789062
     },
     "usa": {
       "symbol": "SPY",
       "name": "US Shares",
-      "usd": 767.5,
+      "usd": 773.5,
       "previousUsd": 761.6900024414062
     },
     "asia": {
       "symbol": "AIA",
       "name": "Asia Shares",
-      "usd": 144.33999633789062,
+      "usd": 145.97999572753906,
       "previousUsd": 140.5500030517578
     }
   },
