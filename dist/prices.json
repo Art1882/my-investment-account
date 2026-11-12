@@ -1,24 +1,24 @@
 {
-  "asOf": "2026-11-12T08:21:43.701319+00:00",
-  "fxUsdMyr": 4.079999923706055,
+  "asOf": "2026-11-12T20:50:03.423633+00:00",
+  "fxUsdMyr": 4.076000213623047,
   "assets": {
     "gold": {
       "symbol": "GLDM",
       "name": "Gold",
-      "usd": 78.80999755859375,
-      "previousUsd": 79.75
+      "usd": 76.72000122070312,
+      "previousUsd": 78.80999755859375
     },
     "usa": {
       "symbol": "SPY",
       "name": "US Shares",
-      "usd": 759.8099975585938,
-      "previousUsd": 749.9199829101562
+      "usd": 756.9400024414062,
+      "previousUsd": 759.8099975585938
     },
     "asia": {
       "symbol": "AIA",
       "name": "Asia Shares",
-      "usd": 127.27999877929688,
-      "previousUsd": 122.93000030517578
+      "usd": 124.97000122070312,
+      "previousUsd": 127.27999877929688
     }
   },
   "source": "Delayed Yahoo Finance market data"
