@@ -38,6 +38,7 @@ Push the repository to a GitHub repository whose default branch is `main`. In **
 - The browser retains a local copy for fast loading and temporary offline use.
 - Changes made offline are retained locally and are uploaded after the user is signed in and connectivity returns.
 - Parent Mode → Export backup remains available as a second recovery method.
+- After adding money, select **Lock parent mode** to return to investing. This closes and locks the parent controls while keeping the account signed in; reopening Parent Mode requires the PIN again. The **×** close button and Escape also lock the controls.
 - Signing out removes access to the cloud account but does not delete Firestore data.
 
 ## Important limits

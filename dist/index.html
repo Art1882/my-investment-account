@@ -73,12 +73,14 @@
   </form></dialog>
 
   <dialog id="parentDialog" class="modal"><form method="dialog" id="parentForm">
-    <button class="close-button" value="cancel" aria-label="Close">×</button><p class="eyebrow dark">PARENT MODE</p><h2 id="parentTitle">Enter your PIN</h2>
+    <button type="button" class="close-button" id="closeParentButton" aria-label="Close and lock parent mode">×</button><p class="eyebrow dark">PARENT MODE</p><h2 id="parentTitle">Enter your PIN</h2>
     <div id="pinStep"><label>Parent PIN<input id="parentPin" type="password" inputmode="numeric" autocomplete="one-time-code" name="parent-access-code" data-lpignore="true" data-1p-ignore maxlength="8" placeholder="••••"></label><p class="form-error" id="pinError"></p><button class="primary-button" id="unlockButton" value="default">Unlock</button></div>
     <div id="parentControls" class="hidden">
       <div class="parent-balance"><span>Next weekly deposit</span><strong id="depositStatus">Ready now</strong></div>
       <button type="button" class="primary-button" id="depositButton">Add weekly RM20</button>
       <p class="small-copy">Only one deposit can be added every 6 days. It stays ready until an investment is chosen.</p>
+      <div class="dialog-actions"><button type="button" class="secondary-button" id="lockParentButton">Lock parent mode</button></div>
+      <p class="small-copy">Return to investing. Your account stays signed in.</p>
       <section class="parent-tool">
         <h3>Add a different amount</h3>
         <div class="inline-control"><label class="grow">Amount (RM)<input id="customAmount" type="number" inputmode="decimal" min="1" max="10000" step="0.01" placeholder="50.00"></label><button type="button" class="secondary-button" id="customDepositButton">Add</button></div>
@@ -112,6 +114,6 @@
   </form></dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="app.js?v=7"></script>
+  <script type="module" src="app.js?v=8"></script>
 </body>
 </html>

@@ -7,6 +7,7 @@ import { startCloud, signInCloud, signOutCloud, saveCloud } from './cloud.js?v=7
   const $=s=>document.querySelector(s); let prices=null, chosen=null, toastTimer, cloudReady=false;
   const blank=()=>({version:2,modifiedAt:0,pinHash:'',pinSalt:'',pending:0,totalDeposited:0,lastDeposit:null,holdings:{gold:0,usa:0,asia:0},transactions:[],snapshots:[]});
   let state=load();
+  let parentSession=0;
   function load(){try{return {...blank(),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return blank()}}
   function save(){state.modifiedAt=Date.now();localStorage.setItem(KEY,JSON.stringify(state));if(cloudReady)saveCloud(state).catch(()=>setSyncStatus('Saved locally','offline'));}
   function setSyncStatus(text,kind=''){const el=$('#syncStatus');el.textContent=text;el.className=`sync-pill ${kind}`.trim()}
@@ -30,11 +31,34 @@ import { startCloud, signInCloud, signOutCloud, saveCloud } from './cloud.js?v=7
   function addCustomDeposit(amount){amount=Math.round(Number(amount)*100)/100;if(!Number.isFinite(amount)||amount<=0||amount>10000)throw new Error('Enter an amount from RM1 to RM10,000.');if(state.pending>0)throw new Error('Invest the money already waiting first.');state.pending=amount;state.totalDeposited+=amount;state.lastDeposit=new Date().toISOString();save();render();showToast(`${money(amount)} is ready to invest.`)}
   function undoLatestInvestment(){const t=state.transactions.at(-1);if(!t||t.type!=='buy')throw new Error('There is no investment to undo.');if(state.pending>0)throw new Error('Invest or reset the money already waiting first.');state.transactions.pop();state.holdings[t.asset]=Math.max(0,state.holdings[t.asset]-t.units);state.pending=t.amount;save();render();showToast(`${money(t.amount)} was returned ready to invest.`)}
   function showToast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2600)}
-  function openParent(){if(!state.pinHash)return $('#setupDialog').showModal();$('#parentPin').value='';$('#pinError').textContent='';$('#pinStep').classList.remove('hidden');$('#parentControls').classList.add('hidden');$('#parentDialog').showModal();setTimeout(()=>{$('#parentPin').value='';$('#parentPin').focus()},50)}
+  function resetParentControls(){
+    parentSession++;
+    for(const id of ['parentPin','newPin','confirmNewPin','customAmount'])$('#'+id).value='';
+    $('#pinError').textContent='';
+    $('#parentTitle').textContent='Enter your PIN';
+    $('#pinStep').classList.remove('hidden');
+    $('#parentControls').classList.add('hidden');
+  }
+  function closeParent(){resetParentControls();$('#parentDialog').close()}
+  function openParent(){if(!state.pinHash)return $('#setupDialog').showModal();resetParentControls();const session=parentSession;$('#parentDialog').showModal();$('#parentDialog').scrollTop=0;setTimeout(()=>{if(session===parentSession&&$('#parentDialog').open){$('#parentPin').value='';$('#parentPin').focus()}},50)}
   function showParentControls(){const c=canDeposit();$('#pinStep').classList.add('hidden');$('#parentControls').classList.remove('hidden');$('#depositStatus').textContent=c.message;$('#depositButton').disabled=!c.ok;$('#parentTitle').textContent='Parent controls'}
   function drawChart(){const canvas=$('#journeyChart'),points=state.snapshots;$('#chartEmpty').classList.toggle('hidden',points.length>1);canvas.classList.toggle('hidden',points.length<2);if(points.length<2)return;const ratio=devicePixelRatio||1,w=canvas.clientWidth,h=canvas.clientHeight;canvas.width=w*ratio;canvas.height=h*ratio;const c=canvas.getContext('2d');c.scale(ratio,ratio);c.clearRect(0,0,w,h);const pad={l:10,r:10,t:16,b:24},max=Math.max(...points.flatMap(p=>[p.value,p.deposited]))*1.08,min=Math.min(0,...points.flatMap(p=>[p.value,p.deposited]))*.98,x=i=>pad.l+i*(w-pad.l-pad.r)/(points.length-1),y=v=>h-pad.b-(v-min)/(max-min||1)*(h-pad.t-pad.b);c.strokeStyle='#e3e8ef';c.lineWidth=1;[0,.5,1].forEach(f=>{const yy=pad.t+f*(h-pad.t-pad.b);c.beginPath();c.moveTo(pad.l,yy);c.lineTo(w-pad.r,yy);c.stroke()});function line(key,color,dash=[]){c.beginPath();points.forEach((p,i)=>i?c.lineTo(x(i),y(p[key])):c.moveTo(x(i),y(p[key])));c.strokeStyle=color;c.lineWidth=3;c.setLineDash(dash);c.lineJoin='round';c.lineCap='round';c.stroke()}line('deposited','#9ba8b8',[6,5]);line('value','#4b8fff');c.setLineDash([]);c.fillStyle='#66758a';c.font='12px sans-serif';c.fillText(dateText(points[0].date).replace(/ \d{4}/,''),pad.l,h-5);const end=dateText(points.at(-1).date).replace(/ \d{4}/,'');c.fillText(end,w-pad.r-c.measureText(end).width,h-5)}
   $('#setupForm').addEventListener('submit',async e=>{e.preventDefault();const a=$('#setupPin').value,b=$('#setupPinConfirm').value;if(!/^\d{4,8}$/.test(a)){return $('#setupError').textContent='Use 4–8 numbers.'}if(a!==b){return $('#setupError').textContent='The PINs do not match.'}state=blank();state.pinSalt=randomSalt();state.pinHash=await hashPin(a,state.pinSalt);state.pending=20;state.totalDeposited=20;state.lastDeposit=new Date().toISOString();save();$('#setupDialog').close();render();showToast('Your first RM20 is ready!')});
-  $('#parentButton').onclick=openParent;$('#parentForm').addEventListener('submit',async e=>{e.preventDefault();if($('#parentControls').classList.contains('hidden')){const h=await hashPin($('#parentPin').value,state.pinSalt);if(h===state.pinHash)showParentControls();else $('#pinError').textContent='That PIN is not correct.'}});$('#depositButton').onclick=()=>{try{addDeposit();showParentControls()}catch(e){showToast(e.message)}};$('#confirmInvest').onclick=e=>{e.preventDefault();try{invest(chosen);$('#confirmDialog').close()}catch(err){showToast(err.message)}};$('#refreshButton').onclick=()=>{getPrices();showToast('Checking the latest prices…')};
+  $('#parentButton').onclick=openParent;
+  $('#closeParentButton').onclick=closeParent;
+  $('#lockParentButton').onclick=()=>{closeParent();showToast('Parent mode locked.')};
+  $('#parentDialog').addEventListener('close',()=>{if(!$('#parentDialog').open)resetParentControls()});
+  $('#parentForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(!$('#parentDialog').open||!$('#parentControls').classList.contains('hidden'))return;
+    const session=++parentSession;
+    const h=await hashPin($('#parentPin').value,state.pinSalt);
+    if(session!==parentSession||!$('#parentDialog').open)return;
+    $('#parentPin').value='';
+    if(h===state.pinHash){$('#pinError').textContent='';showParentControls()}
+    else{$('#pinError').textContent='That PIN is not correct.';$('#parentPin').focus()}
+  });
+  $('#depositButton').onclick=()=>{try{addDeposit();showParentControls()}catch(e){showToast(e.message)}};$('#confirmInvest').onclick=e=>{e.preventDefault();try{invest(chosen);$('#confirmDialog').close()}catch(err){showToast(err.message)}};$('#refreshButton').onclick=()=>{getPrices();showToast('Checking the latest prices…')};
   $('#customDepositButton').onclick=()=>{try{addCustomDeposit($('#customAmount').value);$('#customAmount').value='';showParentControls()}catch(e){showToast(e.message)}};
   $('#changePinButton').onclick=async()=>{const a=$('#newPin').value,b=$('#confirmNewPin').value;if(!/^\d{4,8}$/.test(a))return showToast('Use 4–8 numbers for the new PIN.');if(a!==b)return showToast('The new PINs do not match.');state.pinSalt=randomSalt();state.pinHash=await hashPin(a,state.pinSalt);$('#newPin').value='';$('#confirmNewPin').value='';save();showToast('Parent PIN changed.')};
   $('#undoButton').onclick=()=>{try{undoLatestInvestment()}catch(e){showToast(e.message)}};
